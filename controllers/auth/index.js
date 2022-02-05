@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
-import { HttpCode } from '../../lib/constants';
-import authService from '../../services/auth/index';
+import { HttpCode } from "../../lib/constants";
+import authService from "../../service/auth";
 // import {
 //   UploadFileService,
 //   CloudFileStorage,
@@ -10,8 +10,8 @@ import {
   // SenderNodemailer,
   SenderSendGrid,
   EmailService,
-} from '../../services/email/index';
-import repositoryUsers from '../../repository/user';
+} from "../../service/email";
+import repositoryUsers from "../../repository/user";
 
 const registration = async (req, res, next) => {
   try {
@@ -19,26 +19,26 @@ const registration = async (req, res, next) => {
     const isUserExist = await authService.isUserExist(email);
     if (isUserExist) {
       return res.status(HttpCode.CONFLICT).json({
-        status: 'error',
+        status: "error",
         code: HttpCode.CONFLICT,
-        message: 'Email is already exist',
+        message: "Email is already exist",
       });
     }
     const userData = await authService.create(req.body);
     const emailService = new EmailService(
       process.env.NODE_ENV,
-      new SenderSendGrid(),
+      new SenderSendGrid()
     );
 
     const isMessageSend = await emailService.sendVerifyEmail(
       email,
       userData.name,
-      userData.verificationToken,
+      userData.verificationToken
     );
     delete userData.verificationToken;
 
     res.status(HttpCode.CREATED).json({
-      status: 'success',
+      status: "success",
       code: HttpCode.CREATED,
       data: { ...userData, verificationEmailSend: isMessageSend },
     });
@@ -52,29 +52,29 @@ const login = async (req, res, _next) => {
   const user = await authService.getUser(email, password);
   if (!user) {
     return res.status(HttpCode.UNAUTHORIZED).json({
-      status: 'error',
+      status: "error",
       code: HttpCode.CONFLICT,
-      message: 'Invalid credentials',
+      message: "Invalid credentials",
     });
   }
   const token = authService.getToken(user);
   await authService.setToken(user.id, token);
   res
     .status(HttpCode.OK)
-    .json({ status: 'success', code: HttpCode.OK, data: { token } });
+    .json({ status: "success", code: HttpCode.OK, data: { token } });
 };
 
 const logout = async (req, res, _next) => {
   await authService.setToken(req.user.id, null);
   res
     .status(HttpCode.NO_CONTENT)
-    .json({ status: 'success', code: HttpCode.OK, data: {} });
+    .json({ status: "success", code: HttpCode.OK, data: {} });
 };
 
 const getCurrent = (req, res, _next) => {
   const { email, role } = req.user;
   res.status(HttpCode.OK).json({
-    status: 'success',
+    status: "success",
     code: HttpCode.OK,
     data: { email, role },
   });
@@ -98,15 +98,15 @@ const verifyUser = async (req, res, _next) => {
   if (getUserFromToken) {
     await repositoryUsers.updateVerification(getUserFromToken.id, true);
     return res.status(HttpCode.OK).json({
-      status: 'success',
+      status: "success",
       code: HttpCode.OK,
-      data: { message: 'Success' },
+      data: { message: "Success" },
     });
   }
   res.status(HttpCode.BAD_REQUEST).json({
-    status: 'bad request',
+    status: "bad request",
     code: HttpCode.BAD_REQUEST,
-    data: { message: 'Invalid token' },
+    data: { message: "Invalid token" },
   });
 };
 
@@ -117,31 +117,31 @@ const repeatEmailForVerifyUser = async (req, res, _next) => {
     const { name, verificationToken } = user;
     const emailService = new EmailService(
       process.env.NODE_ENV,
-      new SenderSendGrid(),
+      new SenderSendGrid()
     );
 
     const isMessageSend = await emailService.sendVerifyEmail(
       email,
       name,
-      verificationToken,
+      verificationToken
     );
     if (isMessageSend) {
       return res.status(HttpCode.OK).json({
-        status: 'success',
+        status: "success",
         code: HttpCode.OK,
-        data: { message: 'Verification email sent' },
+        data: { message: "Verification email sent" },
       });
     }
     return res.status(HttpCode.SE).json({
-      status: 'error',
+      status: "error",
       code: HttpCode.SE,
-      data: { message: 'Service Unavailable' },
+      data: { message: "Service Unavailable" },
     });
   }
   res.status(HttpCode.NOT_FOUND).json({
-    status: 'error',
+    status: "error",
     code: HttpCode.NOT_FOUND,
-    data: { message: 'User with this email not found ' },
+    data: { message: "User with this email not found " },
   });
 };
 

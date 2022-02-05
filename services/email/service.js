@@ -1,28 +1,28 @@
-import Mailgen from 'mailgen';
+import Mailgen from "mailgen";
 
 export default class EmailService {
   constructor(environment, sender) {
     this.sender = sender;
     switch (environment) {
-      case 'development':
-        this.link = 'http://localhost:5000';
+      case "development":
+        this.link = "http://localhost:5000";
         break;
-      case 'test':
-        this.link = 'http://localhost:5000';
+      case "test":
+        this.link = "http://localhost:5000";
         break;
-      case 'production':
-        this.link = 'https://kapusta-magic8.herokuapp.com';
+      case "production":
+        this.link = "https://kapusta-magic8.herokuapp.com";
         break;
       default:
-        this.link = 'http://localhost:5000';
+        this.link = "http://localhost:5000";
     }
   }
 
   createEmailTemplate(username, verificationToken) {
     const mailGenerator = new Mailgen({
-      theme: 'default',
+      theme: "default",
       product: {
-        name: 'Kapu$ta',
+        name: "$Kapusta",
         link: this.link,
       },
     });
@@ -32,10 +32,10 @@ export default class EmailService {
         name: username,
         intro: "Welcome! We're very excited to have you on board.",
         action: {
-          instructions: 'To get started with Kapu$ta, please click here:',
+          instructions: "To get started with $Kapusta, please click here:",
           button: {
-            color: '#22BC66', // optional color of button
-            text: 'Confirm your account',
+            color: "#22BC66", // optional color of button
+            text: "Confirm your account",
             link: `${this.link}/api/users/verify/${verificationToken}`,
           },
         },
@@ -50,7 +50,7 @@ export default class EmailService {
     const emailBody = this.createEmailTemplate(username, verificationToken);
     const message = {
       to: email,
-      subject: 'Verify email',
+      subject: "Verify email",
       html: emailBody,
     };
     try {
@@ -58,7 +58,7 @@ export default class EmailService {
       console.log(result);
       return true;
     } catch (error) {
-      console.error('error:', error.message);
+      console.error("error:", error.message);
       return false;
     }
   }
